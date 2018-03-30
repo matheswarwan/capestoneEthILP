@@ -1,0 +1,45 @@
+NocRequest
+	ProjectLocation:string;
+	ProjectName:string;
+	ProjectId:number;
+	ProjectSurveyNumbers:number;
+NocResponse
+	ProjectLocation:string;
+	ProjectName:string;
+	ProjectId:number;
+	ProjectSurveyNumbers:number;
+	ProjectNocStatus:binary(yes or no);
+	ProjectNocReasonForRejection:string;
+LakeAuthorityApprovalRequest
+	ProjectLocation:string;
+	ProjectName:string;
+	ProjectId:number;
+	ProjectSurveyNumbers:number;
+LakeAuthorityApprovalResponse
+	ProjectLocation:string;
+	ProjectName:string;
+	ProjectId:number;
+	ProjectSurveyNumbers:number;
+	LakeAuthorityApprovalStatus:binary(yes or no);
+	LakeAuthorityReasonForRejection:string;
+ForestAuthorityApprovalRequest
+	ProjectLocation:string;
+	ProjectName:string;
+	ProjectId:number;
+	ProjectSurveyNumbers:number;
+ForestAuthorityApprovalResponse
+	ProjectLocation:string;
+	ProjectName:string;
+	ProjectId:number;
+	ProjectSurveyNumbers:number;
+	ForestAuthorityApprovalStatus:binary(yes or no);
+	ForestAuthorityReasonForRejection:string;
+
+WorkFlow:
+	1. Smart Contract Receives NocRequest
+	2. Smart Contract sends LakeAuthorityApprovalRequest
+	3. Smart Contract sends ForestAuthorityApprovalRequest
+	4. Smart Contract receives LakeAuthorityApprovalResponse
+	5. Smart Contract receives ForestAuthorityApprovalResponse
+	6. Smart Contract verifies responses from Lake and Forest authorities
+	7. Smart Contract sends NocResponse to the CityDevelopmentAuthority
