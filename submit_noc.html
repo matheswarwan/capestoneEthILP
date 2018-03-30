@@ -1,0 +1,67 @@
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="main.css">
+
+	<script type="text/javascript" src="bignumber.js"></script>
+	<script type="text/javascript" src="web3.js"></script>
+	<script type="text/javascript" src="connect.js"></script>
+	<script type="text/javascript">
+		providerURL = "http://cilsdbxd18227.silver.com:8546";// "HTTP://127.0.0.1:8545";
+		abi = [{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"overallApprovalStatus","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"getNOCRequestedLocations","outputs":[{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_location","type":"string"},{"name":"_name","type":"string"},{"name":"_address","type":"address"},{"name":"_surveyNumber","type":"uint256"}],"name":"submitNOC","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_location","type":"string"},{"name":"_name","type":"string"},{"name":"_address","type":"address"},{"name":"_surveyNumber","type":"uint256"}],"name":"setProject","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"},{"name":"_forestAuthority","type":"string"},{"name":"_reasonForRejection","type":"string"}],"name":"forestAuthorityApproval","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"_address","type":"address"}],"name":"getProject","outputs":[{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint256"},{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_address","type":"address"},{"name":"_lakeAuthority","type":"string"},{"name":"_reasonForRejection","type":"string"}],"name":"lakeAuthorityApproval","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"}];
+		contractAddress = //"0xfe9052ae2dbc665deb92a735c913e73510c50cdc";
+		var web3 = connect(providerURL, abi);
+		function submitNOC() {
+		
+			var location = document.getElementById('idLocation').value;
+			var name = document.getElementById('idName').value;
+			var id = parseInt(document.getElementById('idId').value);
+			var surveyNumber = document.getElementById('idSurveyNumber').value;
+			var gasValue = parseInt(document.getElementById('idGas').value);
+			
+			var MyContract = web3.eth.contract(abi);
+			var myContractInstance = MyContract.at(contractAddress);
+			
+			var unlockAccount = web3.personal.unlockAccount('0xfc2AcBF73016Fb3449837b4748a87e90E82c45C7','',300);
+			strUnlockAccount = (unlockAccount == null )? "NULL": unlockAccount.toString();
+							
+			var txHash = myContractInstance.submitNOC(location,name,id,surveyNumber, {'value':200, 'gas':gasValue, 'gasPrice':'0'}, function (err, res) {if (error) console.log(error);});
+			
+			document.getElementById("idHashDetails").innerText = JSON.stringify(txHash);
+
+		}
+	</script>
+</head>
+<body>
+<h2>Submit NOC</h2>
+	<table border = 0>
+		<tr>
+			<td>Location</td>
+			<td><input type="text" id="idLocation"></input></td>
+		</tr>
+		<tr>
+			<td>Name</td>
+			<td><input type="text" id="idName"></input></td>
+		</tr>
+		<tr>
+			<td>ID</td>
+			<td><input type="text" id="idId"></input></td>
+		</tr>
+		<tr>
+			<td>Survey Number</td>
+			<td><input type="text" id="idSurveyNumber"></input></td>
+		</tr>
+		<tr>
+			<td>Gas to use</td>
+			<td><input type="text" id="idGas"></input></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="submitNOC();" id="btnSubmitNOC">Submit NOC</button></td>
+		</tr>
+		<tr>
+			<td>NOC Details Submited. Hash # is <div id="idHashDetails"></div></td>
+		</tr>
+	</table>
+</body>
+</html>
+
