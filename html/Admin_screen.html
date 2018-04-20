@@ -1,0 +1,108 @@
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="js/main.css">
+	<script type="text/javascript" src="js/web3.js"></script>
+	<script type="text/javascript" src="js/bdafunctions.js"></script>
+	
+	<script type="text/javascript">
+	
+
+		connectToNetwork();
+		connectToContract();
+		document.addEventListener('DOMContentLoaded', function() {
+			onpageload();	
+		}, false);
+	
+		function onpageload() {
+
+			var accounts = web3.eth.accounts;
+			
+			var select = document.getElementById("idAccount");
+			select.options[select.options.length] = new Option('Please select...','');
+
+			for (var i=0;i<accounts.length;i++) {
+				select.options[select.options.length] = new Option(accounts[i], i);
+			}
+		}
+		
+		function addLakeApprover() {
+	
+			var MyContract = web3.eth.contract(abi);
+			var myContractInstance = MyContract.at(contractAddress);
+			
+			var accountIndex = parseInt(document.getElementById('idAccount').value);
+			var accountToSubmitNOC = web3.personal.unlockAccount(web3.eth.accounts[0],'',300);
+			//strUnlockAccount = (unlockAccount == null )? "NULL": unlockAccount.toString();
+			console.log("accountToAdd "  + web3.eth.accounts[accountIndex]);
+			var txHash = myContractInstance.addForestApprover (accountToSubmitNOC,
+			//web3.eth.accounts[accountIndex].toString(), 
+			{'from':accountToSubmitNOC,'gas':47000} , 
+				function (err, res) { 
+				if(!err) {
+					console.log("Error: " + err + "\n Response: " + res); 
+					var txnReceipt = web3.eth.getTransactionReceipt(res);
+					document.getElementById("idHashDetails").innerHTML = "<br> Block Number: " + txnReceipt.blockNumber
+																		+ "<br> Status: " + txnReceipt.status
+																		//+ "<br> Status-ascii: " + web3.toAscii(txnReceipt.status)
+																		+ "<br> Transaction Hash: " + JSON.stringify(res);
+																		;
+				}
+			});
+			console.log("txHash = " + txHash);
+			
+			
+			//document.getElementById("idHashDetails").innerText = JSON.stringify(txHash);
+
+		}
+		
+		/* function addForestApprover() {
+	
+			var MyContract = web3.eth.contract(abi);
+			var myContractInstance = MyContract.at(contractAddress);
+			
+			var accountToAdd = document.getElementById('idAccount').value;		
+			var accountToSubmitNOC = web3.personal.unlockAccount(web3.eth.accounts[0],'',300);
+			//strUnlockAccount = (unlockAccount == null )? "NULL": unlockAccount.toString();
+			
+			var txHash = myContractInstance.addForestApprover (accountToAdd, {'from':accountToSubmitNOC,'gas':47000} , 
+				function (err, res) { 
+				if(!err) {
+					console.log("Error: " + err + "\n Response: " + res); 
+					var txnReceipt = web3.eth.getTransactionReceipt(res);
+					document.getElementById("idHashDetails").innerHTML = "<br> Block Number: " + txnReceipt.blockNumber
+																		+ "<br> Status: " + txnReceipt.status
+																		//+ "<br> Status-ascii: " + web3.toAscii(txnReceipt.status)
+																		+ "<br> Transaction Hash: " + JSON.stringify(res);
+																		;
+				}
+			});
+			console.log("txHash = " + txHash);
+			
+			
+			//document.getElementById("idHashDetails").innerText = JSON.stringify(txHash);
+
+		} */
+	</script>
+</head>
+<body>
+<h2>Register Land (Only owner can register)</h2>
+
+
+	<table border = 0>
+		<tr>
+			<td>Account</td>
+			<td><select id="idAccount"></select></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="addLakeApprover();" id="btnSetLand">Add Lake approver</button></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="addForestApprover();" id="btnSetLand">Add Forest approver</button></td>
+		</tr>
+	</table>
+	<br>
+	<div id="idHashDetails"></div>
+</body>
+</html>
+

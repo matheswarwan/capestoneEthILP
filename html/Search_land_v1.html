@@ -1,0 +1,81 @@
+<!--
+
+Search based on Survey Number 
+
+-->
+
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="js/main.css">
+
+<!--	<script type="text/javascript" src="js/bignumber.js"></script> -->
+	<script type="text/javascript" src="js/web3.js"></script>
+	<script type="text/javascript" src="js/bdafunctions.js"></script>
+	<script type="text/javascript">
+
+		connectToNetwork();
+		connectToContract();
+		
+		//Page Load
+		//window.onload = onpageload();
+		document.addEventListener('DOMContentLoaded', function() {
+	   // your code here
+				onpageload();	
+			}, false);
+		
+			//Functions
+		function onpageload() {
+
+			
+		}
+
+
+	
+	function viewLandInfo() { 
+		var landHTML="";
+		_id = document.getElementById("idID").value;
+		console.log("ID = "+_id);
+
+		//Call View Land function and check the current status 
+		var viewLandInfo = myContractInstance.viewLand(_id, function (e,r) {
+			if(!e) {   
+							console.log(JSON.stringify(r));
+							landHTML += "<br>" + "Project Location: " + r[0]
+							+ "<br>" + "Survey Number: " + r[1]
+							+ "<br>" + "NOC Status: " + nocStatusDecode(r[2])
+							+ "<br>" + "Lake Approver Status: " + approverStatusDecode(r[3])
+							+ "<br>" + "Lake Approver Comments: " + r[4] 
+							+ "<br>" + "Forest Approver Status: " + approverStatusDecode(r[5])
+							+ "<br>" + "Forest Approver Comments: " + r[6] + "<br>";
+			}
+			console.log("landHTML = " + landHTML);
+			if(landHTML == "") { 
+				document.getElementById("idHashDetails").innerHTML = "Survey # not found";
+			}
+			else 
+			{
+				document.getElementById("idHashDetails").innerHTML = landHTML;
+			}
+
+			
+		});
+	}
+	</script>
+</head>
+<body>
+<h2>Search Land based on ID</h2>
+	<table border = 0>
+		<tr>
+			<td>ID text</td>
+			<td><input type="text" id="idID" ></input></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="viewLandInfo();" id="btnGetLandDetails">Search Land</button></td>
+		</tr>
+	</table>
+	<div id="idHashDetails"></div></td>
+	<div id="idNOCSubmissionDetails"></div></td>
+</body>
+</html>
+

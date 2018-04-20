@@ -1,0 +1,113 @@
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="js/main.css">
+
+	<script type="text/javascript" src="js/web3.js"></script>
+	<script type="text/javascript" src="js/bdafunctions.js"></script>
+
+	<script type="text/javascript">
+		connectToNetwork();
+		connectToContract();
+		var auditHTML;
+		
+		function fneRegisteredLand() 
+		{
+			var RegisteredLandEvent = myContractInstance.eRegisteredLand({},{fromBlock: 0, toBlock: 'latest'});
+			
+			//createdEventresult = 
+			RegisteredLandEvent.get(function(err, res) { //changed watch to get
+			if (!err) {
+				//console.log("error: " + JSON.stringify(err));
+				//console.log("result: " + JSON.stringify(res));
+			
+				auditHTML = "<table border =1><tr><td>projLocation</td><td>name</td><td>id</td><td>surveyNumber</td><td>nocStatus</td><td>lakeAuthApproverStatus</td><td>lakeAuthComments</td><td>forestAuthApproverStatus</td><td>forestAuthComments</td><td>Date/Time</td></tr>";
+				for (var i = 0; i < res.length; i++) {
+					auditHTML += "<tr><td>"+res[i].args.projLocation+"</td><td>"+res[i].args.name+"</td><td>"+web3.toUtf8(res[i].args.id)+"</td><td>"+res[i].args.surveyNumber+"</td><td>"+nocStatusDecode(res[i].args.nocStatus)+"</td><td>"+approverStatusDecode(res[i].args.lakeAuthApproverStatus)+"</td><td>"+res[i].args.lakeAuthComments+"</td><td>"+approverStatusDecode(res[i].args.forestAuthApproverStatus)+"</td><td>"+res[i].args.forestAuthComments+"</td><td>"+new Date( res[i].args.datetime  *1000).toLocaleString()+"</td></tr>";
+					//console.log(JSON.stringify(res.args));
+				}
+//				console.log("auditHTML INSIDE function = " + auditHTML);
+				document.getElementById("idReturnValue").innerHTML = auditHTML;
+
+				return;
+				
+			  }
+			});
+			
+			RegisteredLandEvent.stopWatching();
+			
+		}
+		function fneRequestForNOC() 
+		{
+			var RequestForNOCEvent = myContractInstance.eRequestForNOC({},{fromBlock: 0, toBlock: 'latest'});
+			
+			//createdEventresult = 
+			RequestForNOCEvent.get(function(err, res) { //changed watch to get
+			if (!err) {
+				//console.log("error: " + JSON.stringify(err));
+				//console.log("result: " + JSON.stringify(res));
+			
+				auditHTML = "<table border =1><tr><td>projLocation</td><td>name</td><td>id</td><td>surveyNumber</td><td>nocStatus</td><td>lakeAuthApproverStatus</td><td>lakeAuthComments</td><td>forestAuthApproverStatus</td><td>forestAuthComments</td><td>Date/Time</td></tr>";
+				for (var i = 0; i < res.length; i++) {
+					auditHTML += "<tr><td>"+res[i].args.projLocation+"</td><td>"+res[i].args.name+"</td><td>"+web3.toUtf8(res[i].args.id)+"</td><td>"+res[i].args.surveyNumber+"</td><td>"+nocStatusDecode(res[i].args.nocStatus)+"</td><td>"+approverStatusDecode(res[i].args.lakeAuthApproverStatus)+"</td><td>"+res[i].args.lakeAuthComments+"</td><td>"+approverStatusDecode(res[i].args.forestAuthApproverStatus)+"</td><td>"+res[i].args.forestAuthComments+"</td><td>"+new Date( res[i].args.datetime  *1000).toLocaleString()+"</td></tr>";
+					//console.log(JSON.stringify(res.args));
+				}
+//				console.log("auditHTML INSIDE function = " + auditHTML);
+				document.getElementById("idReturnValue").innerHTML = auditHTML;
+
+				return;
+				
+			  }
+			});
+			
+			RequestForNOCEvent.stopWatching();
+			
+		}	
+		
+		function fneApprovalStatus() 
+		{
+			var ApprovalStatusEvent = myContractInstance.eApprovalStatus({},{fromBlock: 0, toBlock: 'latest'});
+			
+			//createdEventresult = 
+			ApprovalStatusEvent.get(function(err, res) { //changed watch to get
+			if (!err) {
+				//console.log("error: " + JSON.stringify(err));
+				//console.log("result: " + JSON.stringify(res));
+				auditHTML = "<table border =1><tr><td>projLocation</td><td>name</td><td>surveyNumber</td><td>nocStatus</td><td>lakeAuthApproverStatus</td><td>lakeAuthComments</td><td>forestAuthApproverStatus</td><td>forestAuthComments</td><td>Date/Time</td></tr>";
+		
+				for (var i = 0; i < res.length; i++) {
+					auditHTML += "<tr><td>"+res[i].args.projLocation+"</td><td>"+res[i].args.name+"</td><td>"+res[i].args.surveyNumber+"</td><td>"+nocStatusDecode(res[i].args.nocStatus)+"</td><td>"+approverStatusDecode(res[i].args.lakeAuthApproverStatus)+"</td><td>"+res[i].args.lakeAuthComments+"</td><td>"+approverStatusDecode(res[i].args.forestAuthApproverStatus)+"</td><td>"+res[i].args.forestAuthComments+"</td><td>"+new Date( res[i].args.datetime  *1000).toLocaleString()+"</td></tr>";
+					//console.log(JSON.stringify(res.args));
+				}
+				document.getElementById("idReturnValue").innerHTML = auditHTML;
+
+				return;
+				
+			  }
+			});
+			
+			ApprovalStatusEvent.stopWatching();
+			
+		}
+		
+	</script>
+</head>
+<body>
+	<table border = 0>
+
+		<tr>
+			<td><button type="button" onClick="fneRegisteredLand();" id="btnSetString">eRegisteredLand</button></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="fneRequestForNOC();" id="btnSetString">eRequestForNOC</button></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="fneApprovalStatus();" id="btnSetString">eApprovalStatus</button></td>
+		</tr>		
+		<tr>
+			<td><div id="idReturnValue"></div></td>
+		</tr>
+	</table>
+</body>
+</html>
+

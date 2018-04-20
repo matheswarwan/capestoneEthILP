@@ -1,0 +1,111 @@
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="js/main.css">
+	<script type="text/javascript" src="js/web3.js"></script>
+	<script type="text/javascript" src="js/bdafunctions.js"></script>
+	
+	<script type="text/javascript">
+	
+
+		connectToNetwork();
+		connectToContract();
+		document.addEventListener('DOMContentLoaded', function() {
+			onpageload();	
+		}, false);
+	
+		function onpageload() {
+
+			document.getElementById("idGas").value = web3.eth.getBlock("latest").gasLimit;
+			
+			var accounts = web3.eth.accounts;
+			
+			var select = document.getElementById("idAccount");
+			select.options[select.options.length] = new Option('Please select...','');
+
+			for (var i=0;i<accounts.length;i++) {
+				select.options[select.options.length] = new Option(accounts[i], accounts[i]);
+			}
+		}
+		
+		function setLand() {
+		
+			var location = document.getElementById('idLocation').value;
+			var id = document.getElementById('idId').value;
+			console.log("Address = ", id);
+			var name = document.getElementById('idName').value;
+			var surveyNumber = document.getElementById('idSurveyNumber').value;
+			var gasValue = parseInt(document.getElementById('idGas').value);
+			
+			var MyContract = web3.eth.contract(abi);
+			var myContractInstance = MyContract.at(contractAddress);
+			
+			var accountToSubmitNOC = document.getElementById('idAccount').value;		
+			var unlockAccount = web3.personal.unlockAccount(accountToSubmitNOC,'',300);
+			strUnlockAccount = (unlockAccount == null )? "NULL": unlockAccount.toString();
+			
+			
+			console.log("Before Txhash - \n Location: " + location + "\n name: " + name + "\n id: " + id + " \n SN: " + surveyNumber);
+			
+			var txHash = myContractInstance.registerLand (location,name,id,surveyNumber, {'from':accountToSubmitNOC,'gas':gasValue} , 
+				function (err, res) { 
+				if(!err) {
+					console.log("Error: " + err + "\n Response: " + res); 
+					var txnReceipt = web3.eth.getTransactionReceipt(res);
+					document.getElementById("idHashDetails").innerHTML = "<br> Block Number: " + txnReceipt.blockNumber
+																		+ "<br> Status: " + txnReceipt.status
+																		//+ "<br> Status-ascii: " + web3.toAscii(txnReceipt.status)
+																		+ "<br> Transaction Hash: " + JSON.stringify(res);
+																		;
+				}
+				else 
+				{
+					console.log ("ERROR: " + err);
+				}
+			});
+			console.log("txHash = " + txHash);
+			
+			
+			//document.getElementById("idHashDetails").innerText = JSON.stringify(txHash);
+
+		}
+	</script>
+</head>
+<body>
+<h2>Register Land (Only owner can register)</h2>
+
+
+	<table border = 0>
+		<tr>
+			<td>Location</td>
+			<td><input type="text" id="idLocation"></input></td>
+		</tr>
+		<tr>
+			<td>Name</td>
+			<td><input type="text" id="idName"></input></td>
+		</tr>
+		<tr>
+			<td>ID/address</td>
+			<td><input type="text" id="idId"></input></td>
+		</tr>
+		<tr>
+			<td>Survey Number</td>
+			<td><input type="text" id="idSurveyNumber"></input></td>
+		</tr>
+		<tr>
+			<td>Gas to use</td>
+			<td><input type="text" id="idGas"></input></td>
+		</tr>
+		<tr>
+			<td>Account</td>
+			<td><select id="idAccount"></select></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="setLand();" id="btnSetLand">Set Land</button></td>
+		</tr>
+	</table>
+	<br>
+	<div id="idHashDetails"></div>
+</body>
+</html>
+

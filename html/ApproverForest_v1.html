@@ -1,0 +1,267 @@
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="js/main.css">
+	<style>
+	body {font-family: Arial, Helvetica, sans-serif;}
+
+	/* The Modal (background) */
+	.modal,.modalApprover {
+		display: none; /* Hidden by default */
+		position: fixed; /* Stay in place */
+		z-index: 1; /* Sit on top */
+		padding-top: 100px; /* Location of the box */
+		left: 0;
+		top: 0;
+		width: 100%; /* Full width */
+		height: 100%; /* Full height */
+		overflow: auto; /* Enable scroll if needed */
+		background-color: rgb(0,0,0); /* Fallback color */
+		background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+	}
+
+	/* Modal Content */
+	.modal-content{
+		background-color: #fefefe;
+		margin: auto;
+		padding: 20px;
+		border: 1px solid #888;
+		width: 80%;
+	}
+
+	/* The Close Button */
+	.close {
+		color: #aaaaaa;
+		float: right;
+		font-size: 28px;
+		font-weight: bold;
+	}
+
+	.close:hover,
+	.close:focus {
+		color: #000;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	</style>
+	<script type="text/javascript" src="js/bignumber.js"></script>
+	<script type="text/javascript" src="js/web3.js"></script>
+	<script type="text/javascript" src="js/bdafunctions.js"></script>
+
+
+	
+	<script type="text/javascript">
+		connectToNetwork();
+		connectToContract();
+		var result,createdEventresult;
+		var auditHTML = "";
+		var myResults;
+		var account = "";
+		
+		var createdEvent = myContractInstance.eRequestForNOC({},{fromBlock: 0, toBlock: 'latest'});
+		createdEvent.get(function(err, res) { //changed watch to get
+		if (!err) {
+			//console.log("eRequestForNOC Output : " + JSON.stringify(res));
+			auditHTML += "<table border = 1><tr><td>Location</td><td>Name</td><td>Survey Number</td><td>NOC Status</td><td>View Details</td><td>Approve Forest</td></tr>";
+			for (var i = 0; i < res.length; i++) {
+				auditHTML += 	  "<tr><td>"	+res[i].args.projLocation 	+ "</td>"
+							+ "<td>"	+res[i].args.name 		+ "</td>"
+							//+ "ID: "	+res[i].args._id 	+ "\t"
+							+ "<td>"	+res[i].args.surveyNumber 	+ "</td>"
+							+ "<td>"	+nocStatusDecode(res[i].args.nocStatus) 		+ "</td>" 
+							+ "<td><a href='#' onclick='getLand(\""+res[i].args.id+"\");'>view</a> " + "</td>"
+							+ "<td><a href='#' onclick='showModelDialogApprove(\""+web3.toUtf8(res[i].args.id)+"\");'>Approver Forest</a> " + "</td></tr>" 	;
+							//+ "<td><a href='#' onclick='approveForestAuth(\""+res[i].args.id+"\");'>Approver Forest</a> " + "</td>"
+							//+ "<td><a href='#' onclick='overAllApproval(\""+res[i].args.id+"\");'>Overall Status</a> " + "</td></tr>";
+			}
+			auditHTML += "</table>";
+			document.getElementById("auditHTML").innerHTML = auditHTML;
+			return;
+			
+			
+			
+		  }
+		});
+		
+	//Page Load
+	//window.onload = onpageload();
+	document.addEventListener('DOMContentLoaded', function() {
+   // your code here
+			onpageload();	
+		}, false);
+	
+		//Functions
+	function onpageload() {
+		//On-page load code here
+		console.log("page loaded!");
+		document.getElementById("idAddress").value = web3.eth.accounts[0];
+		
+		showModelDialog();
+		
+	}
+	
+
+	function getLand(_id) {
+		var getLandDeatils = myContractInstance.viewLand(_id);
+		document.getElementById("viewDetailsHTML").innerHTML = "<div><b>Details:</b></div>" + 
+			"<table><tr><td>Location:"+ getLandDeatils[0] + "</td></tr>" +
+			"<table><tr><td>Survey Number:"+ getLandDeatils[1] + "</td></tr>" +
+			"<table><tr><td>NOC Status:"+ nocStatusDecode(getLandDeatils[2]) + "</td></tr>" +
+			"<table><tr><td>Lake Approver Status:"+ approverStatusDecode(getLandDeatils[3]) + "</td></tr>" +
+			"<table><tr><td>Lake Approver Comments:"+ getLandDeatils[4] + "</td></tr>" +
+			"<table><tr><td>Forest Approver Status:"+ approverStatusDecode(getLandDeatils[5]) + "</td></tr>" +
+			"<table><tr><td>Forest Approver Comments:"+ getLandDeatils[6] + "</td></tr>" ;
+		
+	}
+	
+	function overAllApproval(_id) { 
+		var approvalAccount = web3.eth.accounts[0];
+		var gasValue = getGasValue();
+		var unlockAccount = web3.personal.unlockAccount(approvalAccount,'',300);
+
+		myContractInstance.overallApprovalStatus(_id,{'from':approvalAccount, 'value':200, 'gas':gasValue, 'gasPrice':'0'}, function (err, res) { 
+			if(!err) { 
+					console.log("Overall Approval status: " + res); 
+					document.getElementById("approvalStatusHTML").innerHTML = JSON.stringify(res);
+				}
+				else {
+					console.log("Approval Failed" + err);
+					document.getElementById("approvalStatusHTML").innerHTML = JSON.stringify(err);
+				}
+				}
+				);
+		console.log("Apprvoal");
+	}
+	
+	function unlockUserAccount() {
+		account = document.getElementById("idAddress").value;
+		var password = document.getElementById("idPassword").value;
+		//console.log("Unlocking for " + approvalAccount + "pas" + password);
+		var unlockAccount = web3.personal.unlockAccount(account,password,300);
+		//console.log("unlockAccount = "  + unlockAccount);
+		strUnlockAccount = (unlockAccount == null )? "NULL": unlockAccount.toString();
+		//console.log("strunlockAccount = "  + strUnlockAccount);
+		document.getElementById("unlockStatus").innerHTML = strUnlockAccount;
+		
+		hideModelDialog();
+	
+	}
+	function showModelDialog() { 
+		var modal = document.getElementById('myModal');
+		var span = document.getElementsByClassName("close")[0];
+		// When the user clicks on <span> (x), close the modal
+		span.onclick = function() {
+			modal.style.display = "block";
+		}
+		modal.style.display = "block";
+		
+	}
+	
+	function hideModelDialog() { 
+		var modal = document.getElementById('myModal');
+		var span = document.getElementsByClassName("close")[0];
+		// When the user clicks on <span> (x), close the modal
+		modal.style.display = "none";
+		
+	}
+	
+	function showModelDialogApprove(_id) { 
+		//console.log("ID from showModelDialogApprove " + _id);
+		var modalApprove = document.getElementById('myApproverModal');
+		var spanApprover = document.getElementsByClassName("closeApprover")[0];
+		document.getElementById("idIdforApproval").value  = _id;
+		document.getElementById("idIdforApproval").innerHTML  = "<td>You're Approving for ID:</td><td>"+_id +"</td>";
+		console.log("ID = " + document.getElementById("idIdforApproval").value);
+		// When the user clicks on <span> (x), close the modal
+		spanApprover.onclick = function() {
+			modalApprove.style.display = "none";
+		}
+		modalApprove.style.display = "block";
+		
+	}
+	
+	function approveForestAuth() { 
+		//unlockUserAccount();
+		var _id = document.getElementById("idIdforApproval").value;
+		var approvalComments = document.getElementById("idApprovalComments").value;
+		console.log("ID = " + _id + " Cmts " + approvalComments);
+		
+		var gasValue = getGasValue() ;
+		//var unlockAccount = web3.personal.unlockAccount(approvalAccount,'',300);
+		console.log("approveNOC from account " + account);
+		myContractInstance.approveNOC(1,_id,1,approvalComments, {'from':account, 'value':200, 'gas':gasValue, 'gasPrice':'0'}, function (err, res) { 
+			if(!err) { 
+					console.log("Successfully Approved: " + res); 
+					document.getElementById("approvalStatusHTML").innerHTML = "Approved! Transaction Hash = " + JSON.stringify(res);
+				}
+				else {
+					console.log("Approval Failed" + err);
+					document.getElementById("approvalStatusHTML").innerHTML = "Unable to approve. Error =  " +  JSON.stringify(err);
+				}
+				}
+				); 
+		console.log("Apprvoal");
+	}
+	
+	function rejectForestAuth() { 
+		//unlockUserAccount();
+		var _id = document.getElementById("idIdforApproval").value;
+		var approvalComments = document.getElementById("idApprovalComments").value;
+		console.log("ID = " + _id + " Cmts " + approvalComments);
+		
+		var gasValue = getGasValue() ;
+		//var unlockAccount = web3.personal.unlockAccount(approvalAccount,'',300);
+		console.log("approveNOC from account " + account);
+		myContractInstance.approveNOC(1,_id,2,approvalComments, {'from':account, 'value':200, 'gas':gasValue, 'gasPrice':'0'}, function (err, res) { 
+			if(!err) { 
+					console.log("Rejected Transaction Hash " + res); 
+					document.getElementById("approvalStatusHTML").innerHTML = "Rejected! Transaction Hash = " + JSON.stringify(res);
+				}
+				else {
+					console.log("Rejection Failed" + err);
+					document.getElementById("approvalStatusHTML").innerHTML = "Unable to reject. Error =  " +  JSON.stringify(err);
+				}
+				}
+				); 
+		console.log("Reject");
+	}
+
+	
+	</script>
+</head>
+<body>
+	<div id="auditHTML"></div>
+	<br><br>
+	<div id="viewDetailsHTML"></div>
+	<br><br>
+	
+<!-- The Modal -->
+<div id="myModal" class="modal">
+	<!-- Modal content -->
+	<div class="modal-content">
+	<span class="close">&times;</span>
+	<h3>Unlock Account to proceed</h3>
+	Enter Account #: <input id="idAddress" type="text"></input>
+	<br>Enter Password: <input id="idPassword" type="text"></input>
+	<div id="unlockStatus"></div>
+	<button id="mycloseBtn" onclick="unlockUserAccount();">Unlock Account</button>
+	</div>
+</div>
+
+<!-- Approver Modal -->
+<div id="myApproverModal" class="modalApprover">
+	<!-- Modal content -->
+	<div class="modal-content">
+	<span class="closeApprover">&times;</span>
+	<div id="idIdforApproval"></div>
+	<input id="idApprovalComments" type="text" value = ""></input>
+	<button id="myApproveBtn" onclick="approveForestAuth();">Approve</button>
+	<button id="myRejectBtn" onclick="rejectForestAuth();">Reject</button>
+	<div id="approvalStatusHTML"></div>
+
+	</div>
+</div>
+	
+</body>
+</html>
+

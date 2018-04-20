@@ -1,0 +1,148 @@
+<!--
+
+Search based on Survey Number 
+
+-->
+
+<!doctype>
+<html>
+<head>
+	<link rel="stylesheet" href="js/main.css">
+
+<!--	<script type="text/javascript" src="js/bignumber.js"></script> -->
+	<script type="text/javascript" src="js/web3.js"></script>
+	<script type="text/javascript" src="js/bdafunctions.js"></script>
+	<script type="text/javascript">
+
+		connectToNetwork();
+		connectToContract();
+		
+		//Page Load
+		//window.onload = onpageload();
+		document.addEventListener('DOMContentLoaded', function() {
+	   // your code here
+				onpageload();	
+			}, false);
+		
+			//Functions
+		function onpageload() {
+
+			
+		}
+
+	function getRegisteredLandfromEvent() {
+		
+		var flag = false;
+		
+		//Hide Previous Hash if any
+		document.getElementById("idNOCSubmissionDetails").innerHTML = "";
+
+		var sn = parseInt(document.getElementById("idSN").value);
+		console.log("SN = " + sn);
+		
+		var eRegisteredLand = myContractInstance.eRegisteredLand({"surveyNumber":sn},{fromBlock:0, toBlock:'latest'});
+		eRegisteredLand.get(
+			function(err, res) { //changed watch to get
+				if (!err) {
+					//console.log("result: " + JSON.stringify("Results lenght - " + 	res.length));
+					if(res.length > 0 ) { 
+					console.log("RES Lenght = " + res.length);
+						for (var i = 0; i < res.length; i++) {
+							if(res[i].args.surveyNumber == sn) { // && res[i].args.nocStatus == 0) {  <-- this will always give 0 since it's event (log)
+								//call view land function 
+								console.log("before view land info " + web3.toUtf8(res[i].args.id));
+								viewLandInfo(web3.toUtf8(res[i].args.id));
+								flag = true;
+								console.log("View Land Info called - Flag = " + flag);
+							}	
+						}
+						if (flag == false) { 
+						console.log("Survey # not found - flag = false");
+						document.getElementById("idHashDetails").innerHTML = "Survey # not found";
+					}
+					} 
+					else { 
+						console.log("Survey # not found");
+						document.getElementById("idHashDetails").innerHTML = "Survey # not found";
+					}
+
+				}});
+		
+		
+	}
+	
+	function viewLandInfo(_id) { 
+		var landHTML="";
+		console.log("In view land info fn " + _id);
+
+		//Call View Land function and check the current status 
+		var viewLandInfo = myContractInstance.viewLand(_id, function (e,r) {
+			if(!e) {   
+				console.log("NOC Status of " + _id + " = " + r[2].c[0]);
+				if (r[2].c[0] == 0) { //If NOC is open 
+					//console.log(JSON.stringify(r));
+							//console.log(JSON.parse(r[i].args));
+							landHTML += "<br>" + "Project Location: " + r[0]
+							+ "<br>" + "Survey Number: " + r[1]
+							+ "<br>" + "NOC Status: " + nocStatusDecode(r[2])
+							+ "<br>" + "Lake Approver Status: " + approverStatusDecode(r[3])
+							+ "<br>" + "Lake Approver Comments: " + r[4] 
+							+ "<br>" + "Forest Approver Status: " + approverStatusDecode(r[5])
+							+ "<br>" + "Forest Approver Comments: " + r[6] + "<br>"
+							
+							+ "<br><br><b><a href='#' onclick='requestForNOC(\""+_id+"\");'>click here</a> </b>to request for NOC" ;
+				
+				}
+			}
+			console.log("landHTML = " + landHTML);
+			if(landHTML == "") { 
+				document.getElementById("idHashDetails").innerHTML = "Survey # not found";
+			}
+			else 
+			{
+				document.getElementById("idHashDetails").innerHTML = landHTML;
+			}
+
+			
+		});
+	}
+	function requestForNOC(_id) { 
+	//myContractInstance
+		document.getElementById("idNOCSubmissionDetails").innerHTML = "";
+		console.log("Request for NOC for ID " + _id);
+		var account = web3.eth.accounts[0]; //TODO: Get account details in popup
+		var password = "";
+		var gasValue = web3.eth.getBlock("latest").gasLimit;
+		var unlockAccount = web3.personal.unlockAccount(account,password,300);
+
+		myContractInstance.requestForNOC(_id,{'from':account, 'value':200, 'gas':gasValue, 'gasPrice':'0'}, function (err, res) { 
+			if(!err) { 
+					console.log("NOC Submitted successfully: " + res); 
+					document.getElementById("idNOCSubmissionDetails").innerHTML = "NOC Submitted successfully: " + JSON.stringify(res);
+			}
+				else {
+					console.log("NOC Submission failed:" + err);
+					document.getElementById("idNOCSubmissionDetails").innerHTML = "NOC Submission failed:" + JSON.stringify(err);
+			}
+		}
+		);
+		console.log("Apprvoal");
+	}
+	</script>
+</head>
+<body>
+<h2>Submit NOC</h2>
+	<table border = 0>
+		<tr>
+			<td>Survey Number</td>
+			<td><input type="number" id="idSN" value=0></input></td>
+		</tr>
+		<tr>
+			<td><button type="button" onClick="getRegisteredLandfromEvent();" id="btnGetLandDetails">Search for Land</button></td>
+		</tr>
+	</table>
+	<div id="idHashDetails"></div></td>
+	<div id="idNOCSubmissionDetails"></div></td>
+</body>
+</html>
+
