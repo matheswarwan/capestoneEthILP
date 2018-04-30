@@ -1,0 +1,53 @@
+Course Path
+1. What is hyperledger
+2. Layout the foundation
+3. Install and try to tools
+4. Hyperledger fabric under the hood - setting up envirnoment and project
+5. Case study
+6. Composer Modeling
+7. Composer SDK/ API
+8. Develop a network app
+
+
+1. What is hyperledger
+========================
+
+Hyperledger (an incubator project) is an umberlla project of open source Blockchain and related tools started in dec 2015 by the linux foundation.
+
+Other projects by Linux foundation include Open Chain, Nodejs, Cloud Foundry, Open API, Core DNS, Rethink DB, Kubernotes
+
+HL has two branches
+1. DLT frameworks (DLT - Distributed Ledger Technology)
+	HL Sawtooth
+	HL Iroha
+	HL Fabric <--
+	HL Burrow 
+	
+2. Tools
+	HL Cello
+	HL Composer <--
+	HL Explorer
+	HL Quilt
+	
+hyperledger.org/community <-- find all the community
+
+What's fabric?
+	Production ready blockchain framework for business blockchain applicatin
+	set of infrastructre and application building blocks
+	practices & guidelines for creating BC apps
+	
+[TOPIC]DLT & its challenges:
+
+Assets - Value - tangible/ intangible (stock ownership, reward points)
+
+* consistency - all of the participants have to see the data
+* Privacy + confidential - Only the authorised party can see the transaction
+* Standardization 
+* Interoperability
+* Scalibility
+
+HL's DLT framework addresses them all.
+
+[TOPIC]DLT for Business Application
+
+**HL is a DLT for Business**
